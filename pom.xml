@@ -20,7 +20,10 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/java/com/rgoliveira/typingemulator</directory>
+                <directory>src/main/java/com/rgoliveira/typingemulator/resources</directory>
+                <includes>
+                    <include>*.properties</include>
+                </includes>
                 <targetPath>com/rgoliveira/typingemulator</targetPath>
             </resource>
         </resources>
