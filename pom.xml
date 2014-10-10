@@ -23,6 +23,7 @@
                 <directory>src/main/java/com/rgoliveira/typingemulator/resources</directory>
                 <includes>
                     <include>*.properties</include>
+                    <include>*.png</include>
                 </includes>
                 <targetPath>com/rgoliveira/typingemulator</targetPath>
             </resource>
