@@ -8,10 +8,21 @@ package com.rgoliveira.typingemulator;
 import com.tulskiy.keymaster.common.HotKey;
 import com.tulskiy.keymaster.common.HotKeyListener;
 import com.tulskiy.keymaster.common.Provider;
+import java.awt.AWTException;
+import java.awt.Frame;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
 import java.awt.Toolkit;
+import java.awt.TrayIcon;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
@@ -22,7 +33,17 @@ import javax.swing.KeyStroke;
  */
 public class EmulatorForm extends javax.swing.JFrame {
 
+    private static final ResourceBundle i18n = ResourceBundle.getBundle("com/rgoliveira/typingemulator/i18n");
+
     Provider hotkeyProvider;
+
+    void restoreFromTray() {
+        SystemTray.getSystemTray().remove(
+                SystemTray.getSystemTray().getTrayIcons()[0]);
+        EmulatorForm.getFrames()[0].setAutoRequestFocus(true);
+        EmulatorForm.getFrames()[0].setVisible(true);
+        EmulatorForm.getFrames()[0].setState(Frame.NORMAL);
+    }
 
     void doTyping() {
         try {
@@ -103,8 +124,12 @@ public class EmulatorForm extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("com/rgoliveira/typingemulator/i18n"); // NOI18N
         setTitle(bundle.getString("form.title")); // NOI18N
+        setIconImage(Toolkit.getDefaultToolkit().getImage(EmulatorForm.class.getResource(i18n.getString("gui.icon"))));
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowIconified(java.awt.event.WindowEvent evt) {
+                formWindowIconified(evt);
+            }
             public void windowOpened(java.awt.event.WindowEvent evt) {
                 formWindowOpened(evt);
             }
@@ -114,7 +139,6 @@ public class EmulatorForm extends javax.swing.JFrame {
         jLabel1.setText(bundle.getString("label.origin")); // NOI18N
 
         jTextField1.setText("jTextField1"); // NOI18N
-        jTextField1.setToolTipText("");
 
         jButton1.setText(bundle.getString("button.testtyping")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -125,9 +149,9 @@ public class EmulatorForm extends javax.swing.JFrame {
 
         jTextField2.setText("jTextField2"); // NOI18N
 
-        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(100), null, null, Integer.valueOf(25)));
+        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(25, 0, 5000, 25));
 
-        jSpinner2.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(50), null, null, Integer.valueOf(25)));
+        jSpinner2.setModel(new javax.swing.SpinnerNumberModel(500, 0, 5000, 25));
 
         jLabel2.setLabelFor(jSpinner1);
         jLabel2.setText(bundle.getString("label.interval")); // NOI18N
@@ -241,6 +265,75 @@ public class EmulatorForm extends javax.swing.JFrame {
         jTextField2.setText("");
     }//GEN-LAST:event_formWindowOpened
 
+    private void formWindowIconified(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowIconified
+        if (!SystemTray.isSupported()) {
+            return;
+        }
+        this.setVisible(false);
+        final PopupMenu pm = new PopupMenu();
+        final TrayIcon ti = new TrayIcon(
+                EmulatorForm.getFrames()[0].getIconImage(),
+                i18n.getString("form.title"));
+
+        pm.add(new MenuItem(i18n.getString("cmd.about"))).addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // todo
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+        pm.addSeparator();
+        pm.add(new MenuItem(i18n.getString("cmd.showwindow"))).addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                restoreFromTray();
+            }
+        });
+        pm.add(new MenuItem(i18n.getString("cmd.quit"))).addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        ti.setImageAutoSize(true);
+        ti.setPopupMenu(pm);
+
+        ti.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() >= 2) {
+                    restoreFromTray();
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        });
+        try {
+            SystemTray.getSystemTray().add(ti);
+            ti.displayMessage(
+                    "Hey!",
+                    "I'm still here!",
+                    TrayIcon.MessageType.INFO);
+        } catch (AWTException ex) {
+            Logger.getLogger(EmulatorForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_formWindowIconified
+
     /**
      * @param args the command line arguments
      */
@@ -252,20 +345,16 @@ public class EmulatorForm extends javax.swing.JFrame {
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
+                if (i18n.getString("gui.lookandfeel").equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(EmulatorForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(EmulatorForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(EmulatorForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(EmulatorForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+
         //</editor-fold>
 
         /* Create and display the form */
